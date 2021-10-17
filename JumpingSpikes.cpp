@@ -55,8 +55,31 @@ bool stopSafely (bool runway[], int runwayLength, int initSpeed, int startIdx) {
  * combined cannot exceed weight of knapsack. Return max subset of values.
  * 
  */
-int knapsackBrute(int value[], int weight[], int arrLength, int W) {
-  return EXIT_SUCCESS;
+int knapsack(int value[], int weight[], int W, int index) {
+  int prevMaxSub = 0;
+  int currMaxSub = 0;
+  /* Base Case: */
+  // stop when hit max weight or invalid input
+  if (W <= 0 || index == 0)  {
+    cout << "Done with W (" << W << ") and index (" << index << ")\n";
+    return 0;
+  }
+
+  // (A) current item itself way bigger than W --> shave off
+  if (weight[index - 1] > W)
+    return knapsack (value, weight, W, index - 1);
+
+  return max ((knapsack (value, weight, W, index - 1)), 
+    (value[index - 1] + knapsack (value, weight, W - weight[index - 1], index - 1)));
+  // prevMaxSub = knapsack (value, weight, W, index - 1);
+  // currMaxSub = knapsack (value, weight, W - weight[index - 1], index - 1);
+
+  // // (B) if current item makes us go over W --> shave off
+  // // (C) otherwise, add it
+  // if (prevMaxSub > currMaxSub)
+  //   return prevMaxSub;
+  // else 
+  //   return currMaxSub;
 }
 
 /**
@@ -94,6 +117,26 @@ int makeChangeMemo (int change, vector<int> * memo) {
   return memo->at(change);
 }
 
+
+/**
+ * We want to make change for N cents. Count the number of ways.
+ */
+int makeChangeFromUnknownCoins (int coins[], int coinsLen, int change) {
+  /* base case */
+  if (change < 0) 
+    return 0;
+
+  if (change == 0)
+    return 1;
+
+  int numWays = 0;
+  for (int i = 0; i < coinsLen; i++) {
+    // try to make change with each cent and see if it does find a way
+    numWays += makeChangeFromUnknownCoins (coins, coinsLen, change - coins[i]);
+  }
+  return numWays;
+}
+
 int main () {
   int arrSz = 12;
   bool arr[] = {true, false, true, true, true, false, true, true, false, true, true};
@@ -103,20 +146,31 @@ int main () {
   // cout << "TEST: speed 2 " << endl << stopSafely (arr, arrSz, 2, 0);
   // cout << "TEST: speed 1 " << endl << stopSafely (arr2, arrSz, 2, 0); // should fail
 
-  int coins[] = {1};
-  cout << "ways to makeChange for 3 cents " << makeChange (coins, 3) << endl;
-  cout << "ways to makeChange for 4 cents " << makeChange (coins, 4) << endl;
-  cout << "ways to makeChange for 5 cents " << makeChange (coins, 5) << endl;
-  cout << "ways to makeChange for 6 cents " << makeChange (coins, 6) << endl;
+  int coins[] = {1, 5, 3};
+  // cout << "ways to makeChange for 3 cents " << makeChange (coins, 3) << endl;
+  // cout << "ways to makeChange for 4 cents " << makeChange (coins, 4) << endl;
+  // cout << "ways to makeChange for 5 cents " << makeChange (coins, 5) << endl;
+  // cout << "ways to makeChange for 6 cents " << makeChange (coins, 6) << endl;
+
+  cout << "ways to makeChange for 3 cents w/ 1, 5: " << makeChangeFromUnknownCoins (coins, 2, 3) << endl;
+  cout << "ways to makeChange for 3 cents w/ 1, 5, 3: " << makeChangeFromUnknownCoins (coins, 3, 3) << endl;
+  cout << "ways to makeChange for 5 cents w/ 1, 5, 3: " << makeChangeFromUnknownCoins (coins, 3, 5) << endl;
+
+  int val[] = { 60, 100, 120 };
+  int wt[] = { 10, 20, 30 };
+  int W = 50;
+  int n = sizeof(val) / sizeof(val[0]);
+  cout << "n is " << n << endl;
+  cout << "knapsack with max 50: " << knapsack(val, wt, W, n) << endl;
 
   vector<int> * memo = new vector<int>();
   for (int i = 0; i < 30; i++) {
     memo->push_back (-1);
   }
-  cout << "ways to makeChange for 3 cents " << makeChangeMemo (3, memo) << endl;
-  cout << "ways to makeChange for 4 cents " << makeChangeMemo (4, memo) << endl;
-  cout << "ways to makeChange for 5 cents " << makeChangeMemo (5, memo) << endl;
-  cout << "ways to makeChange for 6 cents " << makeChangeMemo (6, memo) << endl;
+  // cout << "ways to makeChange for 3 cents " << makeChangeMemo (3, memo) << endl;
+  // cout << "ways to makeChange for 4 cents " << makeChangeMemo (4, memo) << endl;
+  // cout << "ways to makeChange for 5 cents " << makeChangeMemo (5, memo) << endl;
+  // cout << "ways to makeChange for 6 cents " << makeChangeMemo (6, memo) << endl;
 
   delete memo;
 
